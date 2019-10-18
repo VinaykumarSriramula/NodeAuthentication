@@ -1,0 +1,23 @@
+{
+  "name": "NodeAuthentication",
+  "version": "1.0.0",
+  "description": "Login and Authentication code Using Nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sriramulavinaykumar/NodeAuthentication.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sriramulavinaykumar/NodeAuthentication/issues"
+  },
+  "homepage": "https://github.com/sriramulavinaykumar/NodeAuthentication#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
