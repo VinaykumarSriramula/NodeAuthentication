@@ -20,6 +20,6 @@ app.use(express.json());
 
 app.use(UserRouter);
 
-app.listen(port , ()=>{
+app.listen(port, () => {
     console.log("App is listenoing on port :", port)
 });

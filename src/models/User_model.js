@@ -3,9 +3,9 @@ const validator = require('validator');
 const bcrypt = require("bcryptjs")
 const jwt = require('jsonwebtoken');
 const userScheme = new mongoose.Schema({
-    name : {
+    name: {
         type: String,
-        required : true,
+        required: true,
         trim: true
     },
     email: {
@@ -13,8 +13,8 @@ const userScheme = new mongoose.Schema({
         unique: true,
         required: true,
         lowercase: true,
-        validate(value){
-            if(!validator.isEmail(value)){
+        validate(value) {
+            if (!validator.isEmail(value)) {
                 throw new Error('Email is invalid')
             }
         }
@@ -28,25 +28,33 @@ const userScheme = new mongoose.Schema({
     age: {
         type: Number,
         default: 0,
-        validate(value){
-            if(value<0){
+        validate(value) {
+            if (value < 0) {
                 throw new Error('Age cannot be negative')
             }
         }
     },
-    tokens:[{
-        token:{
+    tokens: [{
+        token: {
             type: String,
             required: true
         }
     }]
 
 });
-
-userScheme.methods.generateAuthToken = async function(req, res){
+userScheme.methods.toJSON = function () {
     const user = this;
-    const token = jwt.sign({_id: user._id.toString()}, 'thisismynewcourse');
-    user.tokens = user.tokens.concat({token});
+    const userObject = user.toObject();
+
+    delete userObject.password;
+    delete userObject.tokens;
+
+    return userObject;
+}
+userScheme.methods.generateAuthToken = async function (req, res) {
+    const user = this;
+    const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+    user.tokens = user.tokens.concat({ token });
 
     await user.save();
 
@@ -55,21 +63,21 @@ userScheme.methods.generateAuthToken = async function(req, res){
 
 userScheme.statics.findByCredentials = async (email, password) => {
     console.log("in db")
-    const user = await User.findOne({email});
-    if(!user){
+    const user = await User.findOne({ email });
+    if (!user) {
         throw new Error('No user found with email')
     }
     const isMatch = await bcrypt.compare(password, user.password)
-    if(!isMatch){
+    if (!isMatch) {
         throw new Error('Unable to login')
     }
     return user;
 }
 
-userScheme.pre('save', async function (next){
+userScheme.pre('save', async function (next) {
     const user = this
-    if(user.isModified('password')){
-        user.password= await bcrypt.hash(user.password, 8)
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8)
     }
     next()
 })
