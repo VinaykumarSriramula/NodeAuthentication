@@ -1,21 +1,31 @@
 const express = require("express");
-const User = require("../models/User_model")
-const app = express();
+const User = require("../models/User_model");
+const auth = require('../middleware/auth.js');
 const router = new express.Router();
 
-router.post('/users', (req, res) =>{
+router.post('/users',async (req, res) =>{
     const user = new User(req.body);
-    console.log("req.body : ", req.body);
-    user.save().then(() => {
-        res.status(201).send(user);
-        console.log("req : ", user);
-    }).catch((e) => {
-        res.status(400).send(e);
-        throw new Error("User not saved")
-    })
+    
+    try{
+        await user.save();
+        const token = await user.generateAuthToken();
+        console.log("user : ", token);
+        res.status(201).send({user, token});
+    }catch(e){
+        res.status(400).send("Unable to sign in");
+
+    }
+    // console.log("req.body : ", req.body);
+    // user.save().then(() => {
+    //     res.status(201).send(user);
+    //     console.log("req : ", user);
+    // }).catch((e) => {
+    //     res.status(400).send(e);
+    //     throw new Error("User not saved")
+    // })
 })
 
-router.get('/users', async (req, res) => {
+router.get('/users',auth,  async (req, res) => {
 
     try{
         const users = await User.find();
@@ -32,8 +42,9 @@ router.post('/users/login', async (req, res) => {
     try{
         console.log("user  :", req.body.email, req.body.password);
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        console.log("user  :", user);
-        res.send(user);
+        const token = await user.generateAuthToken();
+        console.log("user  :", token);
+        res.send({user, token});
     }catch(e){
         res.status(500).send(e);
     }
