@@ -12,6 +12,7 @@ const userScheme = new mongoose.Schema({
         type: String,
         unique: true,
         required: true,
+        trim: true,
         lowercase: true,
         validate(value) {
             if (!validator.isEmail(value)) {
@@ -23,7 +24,12 @@ const userScheme = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 7,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (value.toLowerCase().includes('password')) {
+                throw new Error('Password cannot contain "password"')
+            }
+        }
     },
     age: {
         type: Number,
@@ -40,7 +46,6 @@ const userScheme = new mongoose.Schema({
             required: true
         }
     }]
-
 });
 userScheme.methods.toJSON = function () {
     const user = this;
@@ -52,13 +57,18 @@ userScheme.methods.toJSON = function () {
     return userObject;
 }
 userScheme.methods.generateAuthToken = async function (req, res) {
-    const user = this;
-    const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
-    user.tokens = user.tokens.concat({ token });
+    const user = this
+    const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse')
 
-    await user.save();
+    user.tokens = user.tokens.concat({ token })
+    await user.save()
 
-    return token;
+    return token
+    // const user = this;
+    // const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+    // user.tokens = user.tokens.concat({ token });
+    // await user.save();
+    // return token;
 }
 
 userScheme.statics.findByCredentials = async (email, password) => {
